@@ -12,7 +12,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import LMStudioApiError, LMStudioClient, LMStudioConnectionError
-from .const import DOMAIN, UPDATE_INTERVAL_SECONDS
+from .const import DOMAIN
+from .helpers import get_scan_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class LMStudioDataUpdateCoordinator(DataUpdateCoordinator[list[LMStudioModel]]):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=UPDATE_INTERVAL_SECONDS),
+            update_interval=timedelta(seconds=get_scan_interval(entry)),
         )
 
     async def _async_update_data(self) -> list[LMStudioModel]:

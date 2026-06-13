@@ -18,7 +18,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up LM Studio binary sensors."""
-    coordinator: LMStudioDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: LMStudioDataUpdateCoordinator = hass.data[DOMAIN][
+        entry.entry_id
+    ].models
 
     @callback
     def _create_entities() -> list[BinarySensorEntity]:

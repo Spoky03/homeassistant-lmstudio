@@ -1,6 +1,7 @@
 # Home Assistant runtime (local test instance)
 config/.storage/
 config/.cache/
+config/blueprints/
 config/.cloud/
 config/deps/
 config/tts/

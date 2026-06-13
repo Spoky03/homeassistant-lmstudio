@@ -1,0 +1,14 @@
+download_model:
+  name: Download model
+  description: Download a model from the LM Studio catalog to the local server.
+  fields:
+    config_entry:
+      required: true
+      selector:
+        config_entry:
+          integration: lmstudio
+    model:
+      required: true
+      example: "ibm/granite-4-micro"
+      selector:
+        text:

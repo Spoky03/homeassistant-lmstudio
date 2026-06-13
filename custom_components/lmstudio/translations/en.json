@@ -28,6 +28,41 @@
       "reauth_successful": "Reauthentication was successful."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "LM Studio options",
+        "description": "Configure polling, model loading, and conversation settings.",
+        "data": {
+          "scan_interval": "Poll interval (seconds)",
+          "context_length": "Context length (0 = model default)",
+          "flash_attention": "Enable flash attention when loading",
+          "chat_model": "Conversation model",
+          "prompt": "Conversation prompt",
+          "llm_hass_api": "Home Assistant LLM APIs",
+          "temperature": "Temperature",
+          "max_tokens": "Max tokens (0 = model default)",
+          "max_history": "Max conversation history"
+        }
+      }
+    }
+  },
+  "services": {
+    "download_model": {
+      "name": "Download model",
+      "description": "Download a model from the LM Studio catalog to the local server.",
+      "fields": {
+        "config_entry": {
+          "name": "LM Studio server",
+          "description": "The LM Studio integration instance to download to."
+        },
+        "model": {
+          "name": "Model",
+          "description": "Model identifier from the LM Studio catalog (for example ibm/granite-4-micro)."
+        }
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "model_loaded": {
@@ -35,6 +70,12 @@
       }
     },
     "sensor": {
+      "active_downloads": {
+        "name": "Active downloads"
+      },
+      "download_progress": {
+        "name": "Download progress"
+      },
       "model_count": {
         "name": "Models"
       },
@@ -45,7 +86,36 @@
     "switch": {
       "model_load": {
         "name": "Load"
+      },
+      "model_flash_attention": {
+        "name": "Flash attention"
       }
+    },
+    "number": {
+      "model_context_length": {
+        "name": "Context length"
+      }
+    },
+    "conversation": {
+      "conversation": {
+        "name": "Conversation"
+      }
+    },
+    "ai_task": {
+      "ai_task": {
+        "name": "AI Task"
+      }
+    }
+  },
+  "exceptions": {
+    "chat_model_not_configured": {
+      "message": "No conversation model is configured. Set one in the LM Studio integration options."
+    },
+    "chat_error": {
+      "message": "LM Studio chat request failed: {error}"
+    },
+    "chat_empty_response": {
+      "message": "LM Studio returned an empty chat response."
     }
   }
 }

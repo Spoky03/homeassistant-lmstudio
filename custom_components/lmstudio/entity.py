@@ -1,16 +1,36 @@
-"""Base entity for LM Studio."""
+"""Base entity for LM Studio model entities."""
 
 from __future__ import annotations
 
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import LMStudioDataUpdateCoordinator, LMStudioModel
+from .runtime import LMStudioRuntimeData
+
+
+class LMStudioHubEntity(Entity):
+    """Base entity attached to the LM Studio hub device."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, entry: ConfigEntry, runtime: LMStudioRuntimeData) -> None:
+        """Initialize."""
+        self.entry = entry
+        self.runtime = runtime
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name=entry.title,
+            manufacturer="LM Studio",
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
 
 class LMStudioEntity(CoordinatorEntity[LMStudioDataUpdateCoordinator]):
-    """Base class for LM Studio entities."""
+    """Base class for LM Studio model entities."""
 
     _attr_has_entity_name = True
 
