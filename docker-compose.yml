@@ -1,0 +1,11 @@
+services:
+  homeassistant:
+    container_name: ha-lmstudio-test
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ./config:/config
+      - ./custom_components:/config/custom_components
+    environment:
+      - TZ=UTC
+    network_mode: host
+    restart: unless-stopped

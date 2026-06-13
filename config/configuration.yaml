@@ -1,0 +1,10 @@
+# Minimal Home Assistant config for local integration testing.
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.lmstudio: debug
+
+homeassistant:
+  name: LM Studio Test

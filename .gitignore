@@ -1,0 +1,33 @@
+# Home Assistant runtime (local test instance)
+config/.storage/
+config/.cache/
+config/.cloud/
+config/deps/
+config/tts/
+config/www/
+config/.ha_run.lock
+config/.HA_VERSION
+config/home-assistant_v2.db*
+config/home-assistant.log*
+config/secrets.yaml
+config/known_devices.yaml
+config/ip_bans.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+.env
+.env.*
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

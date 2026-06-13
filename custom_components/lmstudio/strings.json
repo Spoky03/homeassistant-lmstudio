@@ -1,0 +1,51 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to LM Studio",
+        "description": "Enter the address of your LM Studio local server.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_token": "API token (optional)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate LM Studio",
+        "description": "Update your API token if authentication is enabled on the LM Studio server.",
+        "data": {
+          "api_token": "API token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to LM Studio. Check host and port.",
+      "invalid_auth": "Invalid API token.",
+      "unknown": "Unexpected error while connecting to LM Studio."
+    },
+    "abort": {
+      "already_configured": "This LM Studio server is already configured.",
+      "reauth_successful": "Reauthentication was successful."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "model_loaded": {
+        "name": "Loaded"
+      }
+    },
+    "sensor": {
+      "model_count": {
+        "name": "Models"
+      },
+      "model_info": {
+        "name": "Info"
+      }
+    },
+    "switch": {
+      "model_load": {
+        "name": "Load"
+      }
+    }
+  }
+}
