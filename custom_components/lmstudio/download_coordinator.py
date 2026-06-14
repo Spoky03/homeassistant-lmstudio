@@ -92,6 +92,7 @@ class LMStudioDownloadCoordinator(DataUpdateCoordinator[dict[str, LMStudioDownlo
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=f"{DOMAIN}_downloads",
             update_interval=None,
         )

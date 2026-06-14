@@ -84,6 +84,7 @@ class LMStudioDataUpdateCoordinator(DataUpdateCoordinator[list[LMStudioModel]]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=DOMAIN,
             update_interval=timedelta(seconds=get_scan_interval(entry)),
         )
