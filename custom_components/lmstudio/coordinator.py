@@ -87,14 +87,29 @@ class LMStudioDataUpdateCoordinator(DataUpdateCoordinator[list[LMStudioModel]]):
             name=DOMAIN,
             update_interval=timedelta(seconds=get_scan_interval(entry)),
         )
+        self._known_models: list[LMStudioModel] = []
 
     async def _async_update_data(self) -> list[LMStudioModel]:
-        """Fetch models from LM Studio."""
+        """Fetch models from LM Studio.
+
+        Keeps the last known model list on transient errors so entities
+        stay available and the conversation/AI task agents remain
+        functional even when LM Studio is briefly unreachable.
+        """
         try:
             raw_models = await self.client.async_get_models()
         except LMStudioConnectionError as err:
+            _LOGGER.debug("LM Studio temporarily unreachable: %s", err)
+            if self._known_models:
+                return self._known_models
             raise UpdateFailed(f"Cannot connect to LM Studio: {err}") from err
         except LMStudioApiError as err:
+            _LOGGER.debug("LM Studio API returned error: %s", err)
+            if self._known_models:
+                return self._known_models
             raise UpdateFailed(str(err)) from err
 
-        return [_parse_model(model) for model in raw_models if model.get("key")]
+        self._known_models = [
+            _parse_model(model) for model in raw_models if model.get("key")
+        ]
+        return self._known_models

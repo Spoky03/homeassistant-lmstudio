@@ -7,15 +7,15 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import LMStudioClient
+from .api import LMStudioApiError, LMStudioClient, LMStudioConnectionError
 from .const import CONF_API_TOKEN, DOMAIN
 from .coordinator import LMStudioDataUpdateCoordinator
 from .download_coordinator import LMStudioDownloadCoordinator
 from .runtime import LMStudioRuntimeData
 from .services import async_setup_services
-
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
@@ -47,7 +47,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass, client, entry, models_coordinator
     )
 
-    await models_coordinator.async_config_entry_first_refresh()
+    try:
+        await models_coordinator.async_config_entry_first_refresh()
+    except ConfigEntryNotReady:
+        raise
+    except (LMStudioConnectionError, LMStudioApiError) as err:
+        raise ConfigEntryNotReady(
+            f"Cannot connect to LM Studio: {err}"
+        ) from err
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = LMStudioRuntimeData(
         models=models_coordinator,
