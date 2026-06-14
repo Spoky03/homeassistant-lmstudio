@@ -22,8 +22,9 @@ from .const import (
 from .coordinator import LMStudioDataUpdateCoordinator, LMStudioModel
 from .entity import LMStudioEntity
 from .helpers import (
+    build_model_load_kwargs,
     get_load_flash_attention,
-    resolve_model_load_context_length,
+    model_supports_load_options,
     resolve_model_load_flash_attention,
 )
 
@@ -45,7 +46,8 @@ async def async_setup_entry(
         entities: list[SwitchEntity] = []
         for model in coordinator.data or []:
             entities.append(LMStudioModelLoadSwitch(coordinator, model))
-            entities.append(LMStudioModelFlashAttentionSwitch(coordinator, model))
+            if model_supports_load_options(model.model_type):
+                entities.append(LMStudioModelFlashAttentionSwitch(coordinator, model))
         return entities
 
     async_add_entities(_create_entities())
@@ -82,17 +84,14 @@ class LMStudioModelLoadSwitch(LMStudioEntity, SwitchEntity):
         if not model or model.loaded:
             return
         try:
-            entry = self.coordinator.config_entry
-            context_length = resolve_model_load_context_length(
-                self.hass, entry, model.key
-            )
-            flash_attention = resolve_model_load_flash_attention(
-                self.hass, entry, model.key
-            )
             await self.coordinator.client.async_load_model(
                 model.key,
-                context_length=context_length,
-                flash_attention=flash_attention,
+                **build_model_load_kwargs(
+                    self.hass,
+                    self.coordinator.config_entry,
+                    model_key=model.key,
+                    model_type=model.model_type,
+                ),
             )
         except LMStudioApiError as err:
             _LOGGER.error("Failed to load model %s: %s", model.key, err)

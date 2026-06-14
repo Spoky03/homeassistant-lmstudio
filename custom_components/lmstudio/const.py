@@ -2,6 +2,9 @@
 
 DOMAIN = "lmstudio"
 
+MODEL_TYPE_LLM = "llm"
+MODEL_TYPE_EMBEDDING = "embedding"
+
 CONF_API_TOKEN = "api_token"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_CONTEXT_LENGTH = "context_length"

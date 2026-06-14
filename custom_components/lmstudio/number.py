@@ -16,7 +16,7 @@ from .const import (
 )
 from .coordinator import LMStudioDataUpdateCoordinator, LMStudioModel
 from .entity import LMStudioEntity
-from .helpers import resolve_model_load_context_length
+from .helpers import model_supports_load_options, resolve_model_load_context_length
 
 
 async def async_setup_entry(
@@ -34,6 +34,7 @@ async def async_setup_entry(
         return [
             LMStudioModelContextLengthNumber(coordinator, model)
             for model in coordinator.data or []
+            if model_supports_load_options(model.model_type)
         ]
 
     async_add_entities(_create_entities())

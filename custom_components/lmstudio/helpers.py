@@ -24,6 +24,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TEMPERATURE,
     DOMAIN,
+    MODEL_TYPE_LLM,
     UNIQUE_ID_CONTEXT_LENGTH_SUFFIX,
     UNIQUE_ID_FLASH_ATTENTION_SUFFIX,
 )
@@ -114,6 +115,11 @@ def resolve_model_load_context_length(
     return get_load_context_length(entry)
 
 
+def model_supports_load_options(model_type: str) -> bool:
+    """Return whether load-time options apply to this model type."""
+    return model_type == MODEL_TYPE_LLM
+
+
 def resolve_model_load_flash_attention(
     hass: HomeAssistant, entry: ConfigEntry, model_key: str
 ) -> bool:
@@ -128,3 +134,24 @@ def resolve_model_load_flash_attention(
             if not state.attributes.get(ATTR_USES_DEFAULT, True):
                 return state.state == "on"
     return get_load_flash_attention(entry)
+
+
+def build_model_load_kwargs(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    *,
+    model_key: str,
+    model_type: str,
+) -> dict[str, int | bool]:
+    """Return load options supported by the given model type."""
+    if not model_supports_load_options(model_type):
+        return {}
+
+    kwargs: dict[str, int | bool] = {}
+    context_length = resolve_model_load_context_length(hass, entry, model_key)
+    if context_length is not None:
+        kwargs["context_length"] = context_length
+    kwargs["flash_attention"] = resolve_model_load_flash_attention(
+        hass, entry, model_key
+    )
+    return kwargs
