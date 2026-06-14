@@ -116,7 +116,7 @@ def resolve_model_load_context_length(
 
 def resolve_model_load_flash_attention(
     hass: HomeAssistant, entry: ConfigEntry, model_key: str
-) -> bool | None:
+) -> bool:
     """Return effective flash attention setting for loading a model."""
     unique_id = _model_option_unique_id(
         entry.entry_id, model_key, UNIQUE_ID_FLASH_ATTENTION_SUFFIX
@@ -125,10 +125,6 @@ def resolve_model_load_flash_attention(
     entity_id = registry.async_get_entity_id("switch", DOMAIN, unique_id)
     if entity_id and (state := hass.states.get(entity_id)) is not None:
         if state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-            if state.attributes.get(ATTR_USES_DEFAULT, True):
-                pass
-            else:
+            if not state.attributes.get(ATTR_USES_DEFAULT, True):
                 return state.state == "on"
-    if get_load_flash_attention(entry):
-        return True
-    return None
+    return get_load_flash_attention(entry)

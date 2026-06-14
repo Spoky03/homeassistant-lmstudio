@@ -86,7 +86,9 @@ async def async_setup_entry(
                 if entity.hass:
                     entity.hass.async_create_task(entity.async_remove())
 
-    download_coordinator.async_add_listener(_handle_download_update)
+    entry.async_on_unload(
+        download_coordinator.async_add_listener(_handle_download_update)
+    )
     entry.async_on_unload(
         download_coordinator.async_add_new_job_listener(_add_job_entity)
     )

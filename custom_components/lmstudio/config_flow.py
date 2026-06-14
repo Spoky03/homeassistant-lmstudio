@@ -51,13 +51,67 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_HOST, default=DEFAULT_HOST): str,
-        vol.Required(CONF_PORT, default=DEFAULT_PORT): vol.Coerce(int),
-        vol.Optional(CONF_API_TOKEN): str,
+def _connection_data_schema(entry_data: dict[str, Any] | None = None) -> vol.Schema:
+    """Return the schema for host, port, and optional API token."""
+    defaults = entry_data or {}
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_HOST, default=defaults.get(CONF_HOST, DEFAULT_HOST)
+            ): str,
+            vol.Required(
+                CONF_PORT, default=defaults.get(CONF_PORT, DEFAULT_PORT)
+            ): vol.Coerce(int),
+            vol.Optional(CONF_API_TOKEN): str,
+        }
+    )
+
+
+STEP_USER_DATA_SCHEMA = _connection_data_schema()
+
+
+def _merge_connection_input(
+    entry_data: dict[str, Any], user_input: dict[str, Any]
+) -> dict[str, Any]:
+    """Merge connection settings, preserving the API token when omitted."""
+    token = user_input.get(CONF_API_TOKEN)
+    if not token:
+        token = entry_data.get(CONF_API_TOKEN)
+    return {
+        CONF_HOST: user_input[CONF_HOST],
+        CONF_PORT: user_input[CONF_PORT],
+        CONF_API_TOKEN: token or None,
     }
-)
+
+
+async def _create_or_update_entry(
+    flow: ConfigFlow,
+    entry: ConfigEntry | None,
+    data: dict[str, Any],
+) -> ConfigFlowResult:
+    """Validate connection settings and create or update a config entry."""
+    host = data[CONF_HOST]
+    port = data[CONF_PORT]
+    await flow.async_set_unique_id(f"{host}:{port}")
+
+    if entry is None:
+        flow._abort_if_unique_id_configured()
+        return flow.async_create_entry(
+            title=f"LM Studio ({host}:{port})",
+            data=data,
+        )
+
+    if entry.unique_id != flow.unique_id:
+        flow._abort_if_unique_id_configured()
+
+    flow.hass.config_entries.async_update_entry(
+        entry,
+        data=data,
+        unique_id=flow.unique_id,
+        title=f"LM Studio ({host}:{port})",
+    )
+    await flow.hass.config_entries.async_reload(entry.entry_id)
+    return flow.async_abort(reason="reconfigure_successful")
 
 
 async def _validate_input(
@@ -199,18 +253,32 @@ class LMStudioConfigFlow(ConfigFlow, domain=DOMAIN):
                 async_get_clientsession(self.hass), user_input
             )
             if not errors:
-                host = user_input[CONF_HOST]
-                port = user_input[CONF_PORT]
-                await self.async_set_unique_id(f"{host}:{port}")
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=f"LM Studio ({host}:{port})",
-                    data=user_input,
-                )
+                return await _create_or_update_entry(self, None, user_input)
 
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle reconfiguration of host and port."""
+        errors: dict[str, str] = {}
+        reconfigure_entry = self._get_reconfigure_entry()
+
+        if user_input is not None:
+            data = _merge_connection_input(reconfigure_entry.data, user_input)
+            errors = await _validate_input(async_get_clientsession(self.hass), data)
+            if not errors:
+                return await _create_or_update_entry(
+                    self, reconfigure_entry, data
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=_connection_data_schema(reconfigure_entry.data),
             errors=errors,
         )
 

@@ -16,6 +16,15 @@
         "data": {
           "api_token": "API token"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure LM Studio",
+        "description": "Update the LM Studio server address without removing the integration.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_token": "API token (optional, leave blank to keep current)"
+        }
       }
     },
     "error": {
@@ -25,7 +34,8 @@
     },
     "abort": {
       "already_configured": "This LM Studio server is already configured.",
-      "reauth_successful": "Reauthentication was successful."
+      "reauth_successful": "Reauthentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful."
     }
   },
   "options": {
